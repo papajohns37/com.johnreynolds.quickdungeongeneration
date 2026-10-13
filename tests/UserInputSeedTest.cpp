@@ -12,26 +12,26 @@ int main() {
     std::cin >> seed;
 
     const DungeonGeneratorConfig config{
-        256,    // mapWidth
-        256,    // mapHeight
+        2000,    // mapWidth
+        2000,    // mapHeight
         1,      // mapWallValue
-        0,      // mapFloorValue
-        32,    // roomWidth
-        32,    // roomHeight
-        3,      // roomTopPadding
-        3,      // roomBottomPadding
-        3,      // roomLeftPadding
-        3,      // roomRightPadding
-        2,      // roomBrushSize
-        512,   // roomSteps
-        3,      // wallHeightMinimum
-        2,      // wallWidthMinimum
+        2,      // mapFloorValue
+        25,    // roomWidth
+        25,    // roomHeight
+        2,      // roomTopPadding
+        2,      // roomBottomPadding
+        2,      // roomLeftPadding
+        2,      // roomRightPadding
+        1,      // roomBrushSize
+        500,   // roomSteps
+        1,      // wallHeightMinimum
+        1,      // wallWidthMinimum
         10,     // roomTileBase
         1,      // roomSeedIncrement
-        5,      // corridorWidth
-        0,      // mstExtraEdges
-        34.0f, // poissonMinimumDistance
-        50,     // poissonPoints
+        2,      // corridorWidth
+        1,      // mstExtraEdges
+        25.0f, // poissonMinimumDistance
+        100,     // poissonPoints
         30      // poissonMaximumAttempts
     };
 

@@ -11,6 +11,12 @@ namespace {
 }
 
 std::vector<Vector2Int> AStarPathfinder::FindPath(const Grid<uint8_t>& map, Vector2Int start, Vector2Int end, int checkWidth, int drawWidth, std::unordered_set<int> validPathTiles){
+    if (start.x < 0 || start.y < 0 || end.x < 0 || end.y < 0 ||
+        start.x >= map.width || start.y >= map.height ||
+        end.x >= map.width || end.y >= map.height) {
+        return {};
+    }
+
     Grid<AStarTile> astarMap(map.width, map.height);
     for (int x = 0; x < map.width; x++)
     {
@@ -26,8 +32,15 @@ std::vector<Vector2Int> AStarPathfinder::FindPath(const Grid<uint8_t>& map, Vect
             };
         }
     }
+    if (!astarMap(start.x, start.y).valid || !astarMap(end.x, end.y).valid) {
+        return {};
+    }
     astarMap(start.x, start.y).distanceFromStart = 0.0f;
     astarMap(start.x, start.y).totalHeuristicCost = distance(start, end);
+
+    if (start.x == end.x && start.y == end.y) {
+        return {start};
+    }
 
     std::priority_queue<AStarTile, std::vector<AStarTile>, std::greater<AStarTile>> queue;
     queue.push(astarMap(start.x, start.y));
@@ -35,24 +48,26 @@ std::vector<Vector2Int> AStarPathfinder::FindPath(const Grid<uint8_t>& map, Vect
         AStarTile current = queue.top();
         queue.pop();
 
-        AStarTile& left = astarMap(current.position.x - 1, current.position.y);
-        AStarTile& right = astarMap(current.position.x + 1, current.position.y);
-        AStarTile& bottom = astarMap(current.position.x, current.position.y - 1);
-        AStarTile& top = astarMap(current.position.x, current.position.y + 1);
-        std::reference_wrapper<AStarTile> adjacent[] = {left, right, bottom, top};
-
-        for (int i = 0; i < 4; i++)
-        {
-            if (!adjacent[i].get().valid){
+        const Vector2Int directions[] = {
+            {-1, 0}, {1, 0}, {0, -1}, {0, 1}
+        };
+        for (const auto& direction : directions) {
+            const int x = current.position.x + direction.x;
+            const int y = current.position.y + direction.y;
+            if (x < 0 || x >= map.width || y < 0 || y >= map.height) {
+                continue;
+            }
+            AStarTile& adjacent = astarMap(x, y);
+            if (!adjacent.valid) {
                 continue;
             }
 
             float distanceFromStart = current.distanceFromStart + 1;
-            if (distanceFromStart < adjacent[i].get().distanceFromStart){
-                adjacent[i].get().distanceFromStart = distanceFromStart;
-                adjacent[i].get().totalHeuristicCost = distanceFromStart + adjacent[i].get().distanceToEnd;
-                adjacent[i].get().prev = &astarMap(current.position.x, current.position.y);
-                queue.push(adjacent[i].get());
+            if (distanceFromStart < adjacent.distanceFromStart){
+                adjacent.distanceFromStart = distanceFromStart;
+                adjacent.totalHeuristicCost = distanceFromStart + adjacent.distanceToEnd;
+                adjacent.prev = &astarMap(current.position.x, current.position.y);
+                queue.push(adjacent);
             }
         }
     }
@@ -105,7 +120,7 @@ namespace {
     }
     float distance(Vector2Int v1, Vector2Int v2) {
         float dx = v1.x - v2.x;
-        float dy = v2.y - v2.y;
+        float dy = v1.y - v2.y;
         return std::sqrt(dx * dx + dy * dy);
     }
 }

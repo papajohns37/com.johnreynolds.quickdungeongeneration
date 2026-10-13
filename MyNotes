@@ -1,8 +1,0 @@
-TODO:
-Setup basic input and output with these parameters:
-mapWidth, mapHeight, seed, numberOfSteps
-Then create a test file that outputs the map in the console
-Find where config variables should be stored, and implement those config variables
-Add corridors
-Add Unity support
-Add enemy and decorations support

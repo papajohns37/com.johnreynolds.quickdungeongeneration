@@ -1,0 +1,7 @@
+{
+  "name": "com.johnreynolds.quickdungeongeneration",
+  "version": "1.0.0",
+  "displayName": "Native C++ Quick Dungeon Generator",
+  "description": "High-performance native C++ dungeon generator for Unity.",
+  "unity": "2022.3"
+}
