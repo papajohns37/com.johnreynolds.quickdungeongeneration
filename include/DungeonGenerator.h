@@ -5,6 +5,7 @@
 
 struct DungeonGenerationResult {
     Grid<uint8_t> map;
+    Grid<int32_t> roomIds;
     int astarCalls;
 };
 

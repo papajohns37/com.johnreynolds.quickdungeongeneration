@@ -50,6 +50,7 @@ DungeonGenerationResult DungeonGenerator::generate(
     const DungeonGeneratorConfig& config,
     int seed) const {
     Grid<uint8_t> map(config.mapWidth, config.mapHeight, config.mapWallValue);
+    Grid<int32_t> roomIds(config.mapWidth, config.mapHeight, 0);
     PoissonDiskSampler sampler;
     const auto localSamples = sampler.generateIntegerPoints(
         config.mapWidth - config.roomWidth,
@@ -91,6 +92,15 @@ DungeonGenerationResult DungeonGenerator::generate(
             room,
             seed + roomIndex * config.roomSeedIncrement);
         copyRoomToMap(room, roomValue, rooms[roomIndex], config, map);
+        const int left = rooms[roomIndex].x - config.roomWidth / 2;
+        const int top = rooms[roomIndex].y - config.roomHeight / 2;
+        for (int y = 0; y < config.roomHeight; ++y) {
+            for (int x = 0; x < config.roomWidth; ++x) {
+                if (room(x, y) == roomValue) {
+                    roomIds(left + x, top + y) = roomIndex + 1;
+                }
+            }
+        }
     }
 
     MSTSolver solver;
@@ -172,5 +182,5 @@ DungeonGenerationResult DungeonGenerator::generate(
     WallThicknessEnforcer wallThicknessEnforcer;
     wallThicknessEnforcer.enforceWallThickness(map, fullMapConfig);
 
-    return {std::move(map), astarCalls};
+    return {std::move(map), std::move(roomIds), astarCalls};
 }

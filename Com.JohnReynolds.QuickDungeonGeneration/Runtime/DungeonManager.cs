@@ -19,27 +19,44 @@ public class DungeonManager : MonoBehaviour
     }
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    private static extern void GenerateDungeonNative(ref DungeonConfigInterop config, int seed, IntPtr outMapData);
+    private static extern void GenerateDungeonNativeWithRooms(
+        ref DungeonConfigInterop config,
+        int seed,
+        IntPtr outMapData,
+        IntPtr outRoomData);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern int GeneratePoissonPointsNative(
+        int width,
+        int height,
+        int minimumDistance,
+        int pointCount,
+        int maximumAttempts,
+        int seed,
+        IntPtr outPoints);
 
     [SerializeField] private Tilemap tilemap;
     [SerializeField] private TileBase wallTile;
     [SerializeField] private TileBase floorTile;
+    [SerializeField] private DungeonPropSpawner propSpawner;
 
     public void Generate(int width, int height, int seed)
     {
         int totalCells = width * height;
         byte[] mapBuffer = new byte[totalCells];
+        int[] roomBuffer = new int[totalCells];
 
-        GCHandle handle = GCHandle.Alloc(mapBuffer, GCHandleType.Pinned);
+        GCHandle mapHandle = GCHandle.Alloc(mapBuffer, GCHandleType.Pinned);
+        GCHandle roomHandle = GCHandle.Alloc(roomBuffer, GCHandleType.Pinned);
         try
         {
             var config = new DungeonConfigInterop
             {
                 mapWidth = width,
                 mapHeight = height,
-                roomWidth = 50,
-                roomHeight = 50,
-                roomSteps = 2000,
+                roomWidth = 25,
+                roomHeight = 25,
+                roomSteps = 500,
                 roomBrushSize = 2,
                 wallHeightMinimum = 3,
                 wallWidthMinimum = 1,
@@ -49,8 +66,8 @@ public class DungeonManager : MonoBehaviour
                 roomRightPadding = 2,
                 roomTileBase = 10,
                 roomSeedIncrement = 1,
-                poissonMinimumDistance = 50,
-                poissonPoints = 1600,
+                poissonMinimumDistance = 27,
+                poissonPoints = 100,
                 poissonMaximumAttempts = 30,
                 mstExtraEdges = 1,
                 corridorWidth = 2,
@@ -58,14 +75,54 @@ public class DungeonManager : MonoBehaviour
                 mapFloorValue = 2
             };
 
-            GenerateDungeonNative(ref config, seed, handle.AddrOfPinnedObject());
+            GenerateDungeonNativeWithRooms(
+                ref config,
+                seed,
+                mapHandle.AddrOfPinnedObject(),
+                roomHandle.AddrOfPinnedObject());
+        }
+        finally
+        {
+            roomHandle.Free();
+            mapHandle.Free();
+        }
+
+        ApplyToTilemap(mapBuffer, width, height);
+        if (propSpawner != null)
+        {
+            propSpawner.Spawn(mapBuffer, roomBuffer, width, height, seed, tilemap);
+        }
+    }
+
+    internal static int GeneratePoissonCandidates(
+        int width,
+        int height,
+        int minimumDistance,
+        int pointCount,
+        int maximumAttempts,
+        int seed,
+        int[] output) {
+        if (output == null || output.Length < pointCount * 2)
+        {
+            throw new ArgumentException("The Poisson output buffer is too small.", nameof(output));
+        }
+
+        GCHandle handle = GCHandle.Alloc(output, GCHandleType.Pinned);
+        try
+        {
+            return GeneratePoissonPointsNative(
+                width,
+                height,
+                Mathf.Max(1, minimumDistance),
+                pointCount,
+                Mathf.Max(1, maximumAttempts),
+                seed,
+                handle.AddrOfPinnedObject());
         }
         finally
         {
             handle.Free();
         }
-
-        ApplyToTilemap(mapBuffer, width, height);
     }
 
     private void ApplyToTilemap(byte[] mapData, int width, int height)
