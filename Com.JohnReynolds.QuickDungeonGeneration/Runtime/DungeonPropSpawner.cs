@@ -65,6 +65,7 @@ public sealed class DungeonPropSpawner : MonoBehaviour
     private Vector2Int playerTile;
     private bool hasPlayer;
     private int maxPlayerDistance;
+    private byte wallValue = 1;
 
     private sealed class SpawnedPlacement
     {
@@ -79,7 +80,8 @@ public sealed class DungeonPropSpawner : MonoBehaviour
         int mapWidth,
         int mapHeight,
         int seed,
-        Tilemap targetTilemap)
+        Tilemap targetTilemap,
+        byte wallTileValue = 1)
     {
         if (mapData == null || roomData == null ||
             mapData.Length != mapWidth * mapHeight ||
@@ -94,6 +96,7 @@ public sealed class DungeonPropSpawner : MonoBehaviour
         width = mapWidth;
         height = mapHeight;
         tilemap = targetTilemap;
+        wallValue = wallTileValue;
         occupancy = new string[map.Length];
         random = new System.Random(seed);
         playerDistances = new int[map.Length];
@@ -260,7 +263,7 @@ public sealed class DungeonPropSpawner : MonoBehaviour
         // where the requested footprint cannot be reached by the global sampler.
         for (int index = ruleIndex % 2; index < map.Length && placed < count; index += 2)
         {
-            if (map[index] == 1)
+            if (map[index] == wallValue)
             {
                 continue;
             }
@@ -279,7 +282,7 @@ public sealed class DungeonPropSpawner : MonoBehaviour
         for (int i = 0; i < map.Length; ++i)
         {
             int index = (i * 7919 + random.Next(map.Length)) % map.Length;
-            if (map[index] == 1)
+            if (map[index] == wallValue)
             {
                 continue;
             }
@@ -299,7 +302,7 @@ public sealed class DungeonPropSpawner : MonoBehaviour
     private bool IsValidCandidate(PropSpawnConfig rule, Vector2Int tile, int roomId, bool restrictToRoom)
     {
         if (tile.x < 0 || tile.y < 0 || tile.x >= width || tile.y >= height ||
-            (!restrictToRoom && map[tile.y * width + tile.x] == 1))
+            (!restrictToRoom && map[tile.y * width + tile.x] == wallValue))
         {
             return false;
         }
@@ -422,7 +425,7 @@ public sealed class DungeonPropSpawner : MonoBehaviour
         if (IsWall(tile + Vector2Int.left)) ++walls;
         if (rule.surfaceType == SurfaceType.Wall) return walls > 0;
         if (rule.surfaceType == SurfaceType.Corner) return walls >= 2;
-        return map[tile.y * width + tile.x] != 1;
+        return map[tile.y * width + tile.x] != wallValue;
     }
 
     private bool FootprintIsValid(PropSpawnConfig rule, Vector2Int tile)
@@ -435,7 +438,7 @@ public sealed class DungeonPropSpawner : MonoBehaviour
             for (int x = 0; x < objectWidth; ++x)
             {
                 int index = (tile.y + y) * width + tile.x + x;
-                if (map[index] == 1 || occupancy[index] != null) return false;
+                if (map[index] == wallValue || occupancy[index] != null) return false;
             }
         }
         return true;
@@ -452,7 +455,7 @@ public sealed class DungeonPropSpawner : MonoBehaviour
             for (int x = left; x <= right; ++x)
             {
                 if (x >= 0 && y >= 0 && x < width && y < height &&
-                    map[y * width + x] == 1) return false;
+                    map[y * width + x] == wallValue) return false;
             }
         }
         return true;
@@ -499,7 +502,7 @@ public sealed class DungeonPropSpawner : MonoBehaviour
     private bool IsWall(Vector2Int tile)
     {
         return tile.x < 0 || tile.y < 0 || tile.x >= width || tile.y >= height ||
-               map[tile.y * width + tile.x] == 1;
+               map[tile.y * width + tile.x] == wallValue;
     }
 
     private void CalculatePlayerDistances()
@@ -534,7 +537,7 @@ public sealed class DungeonPropSpawner : MonoBehaviour
     {
         if (x < 0 || y < 0 || x >= width || y >= height) return;
         int index = y * width + x;
-        if (map[index] == 1 || playerDistances[index] >= 0) return;
+        if (map[index] == wallValue || playerDistances[index] >= 0) return;
         playerDistances[index] = distance;
         queue[tail++] = index;
     }

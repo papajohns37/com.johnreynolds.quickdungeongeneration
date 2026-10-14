@@ -18,3 +18,16 @@ Generated instances are parented below `spawnedObjectsRoot` when assigned and
 are destroyed and rebuilt on the next generation. The original
 `GenerateDungeonNative` three-argument export remains available for native
 callers; Unity uses `GenerateDungeonNativeWithRooms` for room-aware spawning.
+
+## Inspector configuration and enemy paths
+
+`DungeonManager` exposes its `DungeonGenerationConfig` in the Inspector. All
+native generator settings are editable there; the seed remains an argument to
+`Generate(int seed)` so each generation can choose its seed at runtime.
+
+After generation, call `TryFindPathToTarget(inputPosition, targetPosition,
+path)` with an enemy position, a goal position, and a reusable
+`List<Vector3>`. The manager returns a four-direction path through generated
+floor cells in world coordinates. Positions on walls or outside the map are
+resolved to the nearest floor cell. The method returns `false` when no dungeon
+has been generated or the two cells are disconnected.
