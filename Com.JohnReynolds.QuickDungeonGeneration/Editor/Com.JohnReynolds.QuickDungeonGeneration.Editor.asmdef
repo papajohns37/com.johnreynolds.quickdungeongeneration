@@ -1,0 +1,18 @@
+{
+    "name": "Com.JohnReynolds.QuickDungeonGeneration.Editor",
+    "rootNamespace": "",
+    "references": [
+        "Com.YourName.ProceduralDungeon.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

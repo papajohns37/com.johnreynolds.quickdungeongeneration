@@ -12,8 +12,11 @@ public enum PlacementMethod { RandomScatter, PerimeterWallHugger, ClusterAroundA
 [Serializable]
 public enum RotationMode { None, Random4Way, FaceRoomCenter, AlignToWall }
 
-[Serializable]
-public class PropSpawnConfig
+[CreateAssetMenu(
+    fileName = "PropSpawnProfile",
+    menuName = "Quick Dungeon/Prop Spawn Profile",
+    order = 0)]
+public sealed class PropSpawnConfig : ScriptableObject
 {
     [Header("Identification")]
     public string objectKey;
@@ -47,9 +50,19 @@ public class PropSpawnConfig
     public int mutuallyExclusiveGroupId = -1;
 }
 
+[CreateAssetMenu(
+    fileName = "DungeonSpawnProfile",
+    menuName = "Quick Dungeon/Dungeon Spawn Profile",
+    order = 2)]
+public sealed class DungeonSpawnProfile : ScriptableObject
+{
+    [Header("Biome / Level Spawn Rules")]
+    public List<PropSpawnConfig> spawnRules = new List<PropSpawnConfig>();
+}
+
 public sealed class DungeonPropSpawner : MonoBehaviour
 {
-    [SerializeField] private List<PropSpawnConfig> spawnRules = new List<PropSpawnConfig>();
+    [SerializeField] private DungeonSpawnProfile activeSpawnProfile;
     [SerializeField] private Transform spawnedObjectsRoot;
     [SerializeField] private int poissonMaximumAttempts = 30;
 
@@ -66,6 +79,33 @@ public sealed class DungeonPropSpawner : MonoBehaviour
     private bool hasPlayer;
     private int maxPlayerDistance;
     private byte wallValue = 1;
+
+    public DungeonSpawnProfile ActiveSpawnProfile
+    {
+        get { return activeSpawnProfile; }
+        set { activeSpawnProfile = value; }
+    }
+
+    public void Configure(
+        DungeonSpawnProfile profile,
+        Transform objectsRoot = null)
+    {
+        activeSpawnProfile = profile;
+        spawnedObjectsRoot = objectsRoot;
+    }
+
+    private List<PropSpawnConfig> SpawnRules
+    {
+        get
+        {
+            return activeSpawnProfile == null || activeSpawnProfile.spawnRules == null
+                ? EmptyRules
+                : activeSpawnProfile.spawnRules;
+        }
+    }
+
+    private static readonly List<PropSpawnConfig> EmptyRules =
+        new List<PropSpawnConfig>();
 
     private sealed class SpawnedPlacement
     {
@@ -110,9 +150,9 @@ public sealed class DungeonPropSpawner : MonoBehaviour
 
     private void PlacePlayerAnchors()
     {
-        for (int i = 0; i < spawnRules.Count; ++i)
+        for (int i = 0; i < SpawnRules.Count; ++i)
         {
-            PropSpawnConfig rule = spawnRules[i];
+            PropSpawnConfig rule = SpawnRules[i];
             if (!IsUsableRule(rule) || !rule.isPlayer)
             {
                 continue;
@@ -138,9 +178,9 @@ public sealed class DungeonPropSpawner : MonoBehaviour
 
     private void PlaceFarthestAnchors()
     {
-        for (int i = 0; i < spawnRules.Count; ++i)
+        for (int i = 0; i < SpawnRules.Count; ++i)
         {
-            PropSpawnConfig rule = spawnRules[i];
+            PropSpawnConfig rule = SpawnRules[i];
             if (!IsUsableRule(rule) || !rule.isFarthestFromPlayer)
             {
                 continue;
@@ -171,9 +211,9 @@ public sealed class DungeonPropSpawner : MonoBehaviour
 
     private void PlaceGlobalRules()
     {
-        for (int i = 0; i < spawnRules.Count; ++i)
+        for (int i = 0; i < SpawnRules.Count; ++i)
         {
-            PropSpawnConfig rule = spawnRules[i];
+            PropSpawnConfig rule = SpawnRules[i];
             if (!IsUsableRule(rule) || rule.isPlayer || rule.isFarthestFromPlayer)
             {
                 continue;
@@ -195,9 +235,9 @@ public sealed class DungeonPropSpawner : MonoBehaviour
             }
         }
 
-        for (int ruleIndex = 0; ruleIndex < spawnRules.Count; ++ruleIndex)
+        for (int ruleIndex = 0; ruleIndex < SpawnRules.Count; ++ruleIndex)
         {
-            PropSpawnConfig rule = spawnRules[ruleIndex];
+            PropSpawnConfig rule = SpawnRules[ruleIndex];
             if (!IsUsableRule(rule) || rule.isPlayer || rule.isFarthestFromPlayer ||
                 rule.countPerRoom <= 0)
             {

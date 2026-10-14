@@ -1,0 +1,174 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!29 &1
+SceneSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_RenderSettings: {fileID: 0}
+  m_LightmapSettings: {fileID: 0}
+  m_NavMeshSettings: {fileID: 0}
+--- !u!1 &100000
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 100001}
+  - component: {fileID: 100002}
+  - component: {fileID: 100003}
+  m_Layer: 0
+  m_Name: Dungeon Generator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &100001
+Transform:
+  m_GameObject: {fileID: 100000}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 100010}
+  - {fileID: 100020}
+  m_Father: {fileID: 0}
+--- !u!114 &100002
+MonoBehaviour:
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d68cdc59dc883d4e8b90570691ae53d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tilemap: {fileID: 100042}
+  wallTile: {fileID: 0}
+  floorTile: {fileID: 0}
+  propSpawner: {fileID: 100003}
+  config: {fileID: 11400000, guid: 48f6b0dddf7c43a2a3c0de365a9d3154, type: 2}
+--- !u!114 &100003
+MonoBehaviour:
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82a39795cdcba4b48acefe051c39402b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  activeSpawnProfile: {fileID: 11400000, guid: 6c22f2ae2c034f3b9c3c95d5b8f33b4a, type: 2}
+  spawnedObjectsRoot: {fileID: 100030}
+  poissonMaximumAttempts: 30
+--- !u!1 &100010
+GameObject:
+  m_ObjectHideFlags: 0
+  m_Component:
+  - component: {fileID: 100011}
+  - component: {fileID: 100012}
+  m_Layer: 0
+  m_Name: Grid
+  m_TagString: Untagged
+  m_IsActive: 1
+--- !u!4 &100011
+Transform:
+  m_GameObject: {fileID: 100010}
+  m_Father: {fileID: 100001}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 100041}
+  - {fileID: 100051}
+--- !u!156 &100012
+Grid:
+  m_GameObject: {fileID: 100010}
+  serializedVersion: 2
+  cellSize: {x: 1, y: 1, z: 0}
+--- !u!1 &100040
+GameObject:
+  m_ObjectHideFlags: 0
+  m_Component:
+  - component: {fileID: 100041}
+  - component: {fileID: 100042}
+  - component: {fileID: 100043}
+  m_Layer: 0
+  m_Name: FloorTilemap
+  m_TagString: Untagged
+  m_IsActive: 1
+--- !u!4 &100041
+Transform:
+  m_GameObject: {fileID: 100040}
+  m_Father: {fileID: 100010}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+--- !u!183 &100042
+Tilemap:
+  m_GameObject: {fileID: 100040}
+  m_Enabled: 1
+  m_TileAssetArray: []
+  m_TileSpriteArray: []
+--- !u!184 &100043
+TilemapRenderer:
+  m_GameObject: {fileID: 100040}
+  m_Enabled: 1
+--- !u!1 &100050
+GameObject:
+  m_ObjectHideFlags: 0
+  m_Component:
+  - component: {fileID: 100051}
+  - component: {fileID: 100052}
+  - component: {fileID: 100053}
+  m_Layer: 0
+  m_Name: WallTilemap
+  m_TagString: Untagged
+  m_IsActive: 1
+--- !u!4 &100051
+Transform:
+  m_GameObject: {fileID: 100050}
+  m_Father: {fileID: 100010}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+--- !u!183 &100052
+Tilemap:
+  m_GameObject: {fileID: 100050}
+  m_Enabled: 1
+  m_TileAssetArray: []
+  m_TileSpriteArray: []
+--- !u!184 &100053
+TilemapRenderer:
+  m_GameObject: {fileID: 100050}
+  m_Enabled: 1
+--- !u!1 &100020
+GameObject:
+  m_ObjectHideFlags: 0
+  m_Component:
+  - component: {fileID: 100021}
+  - component: {fileID: 100022}
+  - component: {fileID: 100023}
+  m_Layer: 0
+  m_Name: Props
+  m_IsActive: 1
+--- !u!4 &100021
+Transform:
+  m_GameObject: {fileID: 100020}
+  m_Father: {fileID: 100001}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+--- !u!1 &100030
+GameObject:
+  m_ObjectHideFlags: 0
+  m_Component:
+  - component: {fileID: 100031}
+  m_Layer: 0
+  m_Name: Spawned Objects
+  m_IsActive: 1
+--- !u!4 &100031
+Transform:
+  m_GameObject: {fileID: 100030}
+  m_Father: {fileID: 100001}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}

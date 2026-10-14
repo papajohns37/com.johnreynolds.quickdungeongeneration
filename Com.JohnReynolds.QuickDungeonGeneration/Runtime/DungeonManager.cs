@@ -4,8 +4,11 @@ using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-[Serializable]
-public sealed class DungeonGenerationConfig
+[CreateAssetMenu(
+    fileName = "DungeonGenerationProfile",
+    menuName = "Quick Dungeon/Dungeon Generation Profile",
+    order = 1)]
+public sealed class DungeonGenerationConfig : ScriptableObject
 {
     [Header("Map")]
     public int mapWidth = 48;
@@ -71,41 +74,80 @@ public class DungeonManager : MonoBehaviour
     [SerializeField] private TileBase wallTile;
     [SerializeField] private TileBase floorTile;
     [SerializeField] private DungeonPropSpawner propSpawner;
-    [SerializeField] private DungeonGenerationConfig config = new DungeonGenerationConfig();
+    [SerializeField] private DungeonGenerationConfig config;
+
+    public DungeonGenerationConfig Config
+    {
+        get { return config; }
+        set { config = value; }
+    }
+
+    public Tilemap Tilemap
+    {
+        get { return tilemap; }
+        set { tilemap = value; }
+    }
+
+    public TileBase WallTile
+    {
+        get { return wallTile; }
+        set { wallTile = value; }
+    }
+
+    public TileBase FloorTile
+    {
+        get { return floorTile; }
+        set { floorTile = value; }
+    }
+
+    public DungeonPropSpawner PropSpawner
+    {
+        get { return propSpawner; }
+        set { propSpawner = value; }
+    }
 
     public void Generate(int seed)
     {
-        Generate(config, seed);
+        Generate(GetConfigOrDefault(), seed);
     }
 
     // Kept for callers that supplied dimensions before the inspector configuration existed.
     public void Generate(int width, int height, int seed)
     {
-        DungeonGenerationConfig requestedConfig = new DungeonGenerationConfig
-        {
-            mapWidth = width,
-            mapHeight = height,
-            mapWallValue = config.mapWallValue,
-            mapFloorValue = config.mapFloorValue,
-            roomWidth = config.roomWidth,
-            roomHeight = config.roomHeight,
-            roomSteps = config.roomSteps,
-            roomBrushSize = config.roomBrushSize,
-            wallHeightMinimum = config.wallHeightMinimum,
-            wallWidthMinimum = config.wallWidthMinimum,
-            roomTopPadding = config.roomTopPadding,
-            roomBottomPadding = config.roomBottomPadding,
-            roomLeftPadding = config.roomLeftPadding,
-            roomRightPadding = config.roomRightPadding,
-            roomTileBase = config.roomTileBase,
-            roomSeedIncrement = config.roomSeedIncrement,
-            poissonMinimumDistance = config.poissonMinimumDistance,
-            poissonPoints = config.poissonPoints,
-            poissonMaximumAttempts = config.poissonMaximumAttempts,
-            mstExtraEdges = config.mstExtraEdges,
-            corridorWidth = config.corridorWidth
-        };
+        DungeonGenerationConfig sourceConfig = GetConfigOrDefault();
+        DungeonGenerationConfig requestedConfig = CreateConfigInstance();
+        requestedConfig.mapWidth = width;
+        requestedConfig.mapHeight = height;
+        requestedConfig.mapWallValue = sourceConfig.mapWallValue;
+        requestedConfig.mapFloorValue = sourceConfig.mapFloorValue;
+        requestedConfig.roomWidth = sourceConfig.roomWidth;
+        requestedConfig.roomHeight = sourceConfig.roomHeight;
+        requestedConfig.roomSteps = sourceConfig.roomSteps;
+        requestedConfig.roomBrushSize = sourceConfig.roomBrushSize;
+        requestedConfig.wallHeightMinimum = sourceConfig.wallHeightMinimum;
+        requestedConfig.wallWidthMinimum = sourceConfig.wallWidthMinimum;
+        requestedConfig.roomTopPadding = sourceConfig.roomTopPadding;
+        requestedConfig.roomBottomPadding = sourceConfig.roomBottomPadding;
+        requestedConfig.roomLeftPadding = sourceConfig.roomLeftPadding;
+        requestedConfig.roomRightPadding = sourceConfig.roomRightPadding;
+        requestedConfig.roomTileBase = sourceConfig.roomTileBase;
+        requestedConfig.roomSeedIncrement = sourceConfig.roomSeedIncrement;
+        requestedConfig.poissonMinimumDistance = sourceConfig.poissonMinimumDistance;
+        requestedConfig.poissonPoints = sourceConfig.poissonPoints;
+        requestedConfig.poissonMaximumAttempts = sourceConfig.poissonMaximumAttempts;
+        requestedConfig.mstExtraEdges = sourceConfig.mstExtraEdges;
+        requestedConfig.corridorWidth = sourceConfig.corridorWidth;
         Generate(requestedConfig, seed);
+    }
+
+    private DungeonGenerationConfig GetConfigOrDefault()
+    {
+        return config != null ? config : CreateConfigInstance();
+    }
+
+    private static DungeonGenerationConfig CreateConfigInstance()
+    {
+        return CreateInstance<DungeonGenerationConfig>();
     }
 
     private void Generate(DungeonGenerationConfig generationConfig, int seed)

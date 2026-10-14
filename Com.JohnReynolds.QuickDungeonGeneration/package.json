@@ -3,5 +3,12 @@
   "version": "1.0.0",
   "displayName": "Native C++ Quick Dungeon Generator",
   "description": "High-performance native C++ dungeon generator for Unity.",
-  "unity": "2022.3"
+  "unity": "2022.3",
+  "samples": [
+    {
+      "displayName": "Quick Dungeon Sample",
+      "description": "A ready-to-configure scene containing the DungeonManager, tilemap hierarchy, and prop spawner.",
+      "path": "Samples~/Quick Dungeon Sample"
+    }
+  ]
 }
