@@ -28,7 +28,7 @@ public static class DungeonSetupWizard
         gridObject.transform.SetParent(root.transform, false);
 
         Tilemap floorTilemap = CreateTilemap(gridObject.transform, "FloorTilemap");
-        CreateTilemap(gridObject.transform, "WallTilemap");
+        Tilemap wallTilemap = CreateTilemap(gridObject.transform, "WallTilemap");
 
         GameObject propsObject = new GameObject("Props");
         Undo.RegisterCreatedObjectUndo(propsObject, "Create Dungeon Props");
@@ -40,6 +40,7 @@ public static class DungeonSetupWizard
         Undo.RegisterCreatedObjectUndo(spawner, "Add Dungeon Prop Spawner");
 
         manager.Tilemap = floorTilemap;
+        manager.WallTilemap = wallTilemap;
         manager.PropSpawner = spawner;
         manager.Config = CreateConfigAsset("Assets/QuickDungeonSamples/DungeonGenerationProfile.asset");
         spawner.Configure(

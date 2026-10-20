@@ -3,40 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-
-[CreateAssetMenu(
-    fileName = "DungeonGenerationProfile",
-    menuName = "Quick Dungeon/Dungeon Generation Profile",
-    order = 1)]
-public sealed class DungeonGenerationConfig : ScriptableObject
-{
-    [Header("Map")]
-    public int mapWidth = 48;
-    public int mapHeight = 48;
-    public byte mapWallValue = 1;
-    public byte mapFloorValue = 2;
-
-    [Header("Rooms")]
-    public int roomWidth = 25;
-    public int roomHeight = 25;
-    public int roomSteps = 500;
-    public int roomBrushSize = 2;
-    public int wallHeightMinimum = 3;
-    public int wallWidthMinimum = 1;
-    public int roomTopPadding = 3;
-    public int roomBottomPadding = 3;
-    public int roomLeftPadding = 2;
-    public int roomRightPadding = 2;
-    public int roomTileBase = 10;
-    public int roomSeedIncrement = 1;
-
-    [Header("Connections and Sampling")]
-    public int poissonMinimumDistance = 27;
-    public int poissonPoints = 100;
-    public int poissonMaximumAttempts = 30;
-    public int mstExtraEdges = 1;
-    public int corridorWidth = 2;
-}
+using UnityEngine.Serialization;
 
 public class DungeonManager : MonoBehaviour
 {
@@ -70,7 +37,9 @@ public class DungeonManager : MonoBehaviour
         int seed,
         IntPtr outPoints);
 
-    [SerializeField] private Tilemap tilemap;
+    [FormerlySerializedAs("tilemap")]
+    [SerializeField] private Tilemap floorTilemap;
+    [SerializeField] private Tilemap wallTilemap;
     [SerializeField] private TileBase wallTile;
     [SerializeField] private TileBase floorTile;
     [SerializeField] private DungeonPropSpawner propSpawner;
@@ -84,8 +53,20 @@ public class DungeonManager : MonoBehaviour
 
     public Tilemap Tilemap
     {
-        get { return tilemap; }
-        set { tilemap = value; }
+        get { return floorTilemap; }
+        set { floorTilemap = value; }
+    }
+
+    public Tilemap FloorTilemap
+    {
+        get { return floorTilemap; }
+        set { floorTilemap = value; }
+    }
+
+    public Tilemap WallTilemap
+    {
+        get { return wallTilemap; }
+        set { wallTilemap = value; }
     }
 
     public TileBase WallTile
@@ -147,7 +128,7 @@ public class DungeonManager : MonoBehaviour
 
     private static DungeonGenerationConfig CreateConfigInstance()
     {
-        return CreateInstance<DungeonGenerationConfig>();
+        return ScriptableObject.CreateInstance<DungeonGenerationConfig>();
     }
 
     private void Generate(DungeonGenerationConfig generationConfig, int seed)
@@ -218,7 +199,7 @@ public class DungeonManager : MonoBehaviour
                 width,
                 height,
                 seed,
-                tilemap,
+                floorTilemap,
                 generationConfig.mapWallValue);
         }
     }
@@ -234,13 +215,13 @@ public class DungeonManager : MonoBehaviour
             }
 
             path.Clear();
-            if (generatedMap == null || tilemap == null)
+            if (generatedMap == null || floorTilemap == null)
             {
                 return false;
             }
 
-            Vector3Int inputCell = tilemap.WorldToCell(inputPosition);
-            Vector3Int targetCell = tilemap.WorldToCell(targetPosition);
+            Vector3Int inputCell = floorTilemap.WorldToCell(inputPosition);
+            Vector3Int targetCell = floorTilemap.WorldToCell(targetPosition);
             Vector2Int start = FindNearestFloor(new Vector2Int(inputCell.x, inputCell.y));
             Vector2Int goal = FindNearestFloor(new Vector2Int(targetCell.x, targetCell.y));
             if (start.x < 0 || goal.x < 0)
@@ -288,7 +269,7 @@ public class DungeonManager : MonoBehaviour
             for (int i = indices.Count - 1; i >= 0; --i)
             {
                 int index = indices[i];
-                path.Add(tilemap.GetCellCenterWorld(new Vector3Int(
+                path.Add(floorTilemap.GetCellCenterWorld(new Vector3Int(
                     index % generatedWidth,
                     index / generatedWidth,
                     0)));
@@ -400,19 +381,31 @@ public class DungeonManager : MonoBehaviour
         byte wallValue,
         byte floorValue)
     {
-        tilemap.ClearAllTiles();
-        TileBase[] tileArray = new TileBase[mapData.Length];
+        if (floorTilemap == null || wallTilemap == null)
+        {
+            throw new InvalidOperationException(
+                "DungeonManager requires both a floor Tilemap and a wall Tilemap.");
+        }
+
+        floorTilemap.ClearAllTiles();
+        wallTilemap.ClearAllTiles();
+        TileBase[] floorTileArray = new TileBase[mapData.Length];
+        TileBase[] wallTileArray = new TileBase[mapData.Length];
 
         for (int i = 0; i < mapData.Length; i++)
         {
-            tileArray[i] = mapData[i] == wallValue
-                ? wallTile
-                : mapData[i] == floorValue
-                    ? floorTile
-                    : null;
+            if (mapData[i] == wallValue)
+            {
+                wallTileArray[i] = wallTile;
+            }
+            else if (mapData[i] == floorValue)
+            {
+                floorTileArray[i] = floorTile;
+            }
         }
 
         BoundsInt bounds = new BoundsInt(0, 0, 0, width, height, 1);
-        tilemap.SetTilesBlock(bounds, tileArray);
+        floorTilemap.SetTilesBlock(bounds, floorTileArray);
+        wallTilemap.SetTilesBlock(bounds, wallTileArray);
     }
 }

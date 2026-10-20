@@ -12,54 +12,6 @@ public enum PlacementMethod { RandomScatter, PerimeterWallHugger, ClusterAroundA
 [Serializable]
 public enum RotationMode { None, Random4Way, FaceRoomCenter, AlignToWall }
 
-[CreateAssetMenu(
-    fileName = "PropSpawnProfile",
-    menuName = "Quick Dungeon/Prop Spawn Profile",
-    order = 0)]
-public sealed class PropSpawnConfig : ScriptableObject
-{
-    [Header("Identification")]
-    public string objectKey;
-    public GameObject prefab;
-
-    [Header("Quantity & Frequency")]
-    public int countPerLevel;
-    public int levelVariance;
-    public int countPerRoom;
-    public int roomVariance;
-    [Range(0f, 1f)] public float roomIncludeChance = 1f;
-
-    [Header("Footprint & Clearance")]
-    public int width = 1;
-    public int height = 1;
-    public bool isSolid;
-    public int minInstanceSeparation;
-
-    [Header("Placement Rules & Anchors")]
-    public SurfaceType surfaceType = SurfaceType.Floor;
-    public PlacementMethod placementMethod = PlacementMethod.RandomScatter;
-
-    [Header("Player & Distance Relations")]
-    public bool isPlayer;
-    public bool isFarthestFromPlayer;
-    [Range(0f, 1f)] public float minDistanceFromPlayerRatio;
-    [Range(0f, 1f)] public float maxDistanceFromPlayerRatio = 1f;
-
-    [Header("Orientation & Grouping")]
-    public RotationMode rotationMode = RotationMode.None;
-    public int mutuallyExclusiveGroupId = -1;
-}
-
-[CreateAssetMenu(
-    fileName = "DungeonSpawnProfile",
-    menuName = "Quick Dungeon/Dungeon Spawn Profile",
-    order = 2)]
-public sealed class DungeonSpawnProfile : ScriptableObject
-{
-    [Header("Biome / Level Spawn Rules")]
-    public List<PropSpawnConfig> spawnRules = new List<PropSpawnConfig>();
-}
-
 public sealed class DungeonPropSpawner : MonoBehaviour
 {
     [SerializeField] private DungeonSpawnProfile activeSpawnProfile;
@@ -299,17 +251,28 @@ public sealed class DungeonPropSpawner : MonoBehaviour
             }
         }
 
-        // Poisson samples are deliberately bounded. The deterministic scan fills small rooms
-        // where the requested footprint cannot be reached by the global sampler.
-        for (int index = ruleIndex % 2; index < map.Length && placed < count; index += 2)
+        List<int> fallbackIndices = new List<int>();
+        for (int index = 0; index < map.Length; ++index)
         {
-            if (map[index] == wallValue)
-            {
-                continue;
-            }
+            if (map[index] == wallValue) continue;
+            if (restrictToRoom && roomIds[index] != roomId) continue;
+
+            fallbackIndices.Add(index);
+        }
+
+        for (int i = fallbackIndices.Count - 1; i > 0; --i)
+        {
+            int rnd = random.Next(i + 1);
+            int temp = fallbackIndices[i];
+            fallbackIndices[i] = fallbackIndices[rnd];
+            fallbackIndices[rnd] = temp;
+        }
+
+        for (int i = 0; i < fallbackIndices.Count && placed < count; ++i)
+        {
+            int index = fallbackIndices[i];
             Vector2Int tile = new Vector2Int(index % width, index / width);
-            if ((!restrictToRoom || roomIds[index] == roomId) &&
-                IsValidCandidate(rule, tile, roomId, restrictToRoom) &&
+            if (IsValidCandidate(rule, tile, roomId, restrictToRoom) &&
                 TrySpawn(rule, tile))
             {
                 ++placed;

@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5d68cdc59dc883d4e8b90570691ae53d, type: 3}
+  m_Script: {fileID: 11500000, guid: 9b3c2a7f6e1d4c58a0b9e2f7d5c81346, type: 3}
   m_Name: DungeonGenerationProfile
   m_EditorClassIdentifier: 
   mapWidth: 48

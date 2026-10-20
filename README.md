@@ -38,7 +38,9 @@ The package supports both a manual component workflow and a one-click editor
 workflow:
 
 1. Open `Tools > Quick Dungeon > Create Dungeon Generator`.
-2. Assign floor and wall `TileBase` assets to the generated manager.
+2. Assign the generated manager's `Floor Tilemap` and `Wall Tilemap`, then
+   assign the floor and wall `TileBase` assets. Floor cells are written only to
+   the floor tilemap, and wall cells are written only to the wall tilemap.
 3. Create reusable dungeon settings with `Assets > Create > Quick Dungeon >
    Dungeon Generation Profile`. Assign the profile to `DungeonManager.Config`.
    Duplicate profiles to create larger or harder progression tiers.
