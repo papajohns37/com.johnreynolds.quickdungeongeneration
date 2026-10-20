@@ -112,7 +112,10 @@ DungeonGenerationResult DungeonGenerator::generate(
     OrthogonalRoutingPathfinder pathfinder;
     AStarPathfinder aStarPathfinder;
     int astarCalls = 0;
+    int edgeCount = 0;
     for (const auto& edge : edges) {
+        edgeCount++;
+        
         const int sourceRoom = config.roomTileBase + edge.v1;
         const int destinationRoom = config.roomTileBase + edge.v2;
         auto path = pathfinder.FindPath(
@@ -128,7 +131,7 @@ DungeonGenerationResult DungeonGenerator::generate(
                 destinationRoom));
 
         // If this edge is part of the MST and could not be found, use A* to ensure the dungeon is fully accessible
-        if (path.empty() && edges.size() < rooms.size()) {
+        if (path.empty() && edgeCount < rooms.size()) {
             astarCalls++;
             path = aStarPathfinder.FindPath(
                 map,
