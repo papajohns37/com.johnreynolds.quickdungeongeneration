@@ -15,6 +15,11 @@ add_library(NativeLevelGen SHARED
     src/WallThicknessEnforcer.cpp
 )
 
+# Statically link the MSVC runtime library (/MT for Release, /MTd for Debug)
+set_property(TARGET NativeLevelGen PROPERTY
+    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
+)
+
 target_include_directories(NativeLevelGen
     PRIVATE
         ${PROJECT_SOURCE_DIR}/include
